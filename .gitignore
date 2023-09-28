@@ -1,0 +1,5 @@
+devel/
+logs/
+build/
+CATKIN_IGNORE
+.catkin_workspace
