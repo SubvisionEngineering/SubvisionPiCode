@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from sensor_msgs.msg import Joy
@@ -23,9 +23,8 @@ def thrust_value_publisher():
         if joystick_data is not None:
             x = -joystick_data[0]
             y = joystick_data[1]
-            r = joystick_data[3]
+            r = joystick_data[2]
             
-    
             a1 = 1
             b1 = 1
             c1 = -1
@@ -35,21 +34,32 @@ def thrust_value_publisher():
             b2 = -1
             c2 = 1
             d2 = -1
-                
 
-            LFM = a1*y + a2*x + r
+            LFM = a1*y + a2*x - r
             RFM = b1*y + b2*x + r
-            LBM = c1*y + c2*x + r
+            LBM = c1*y + c2*x - r
             RBM = d1*y + d2*x + r
+
+            RLF = abs(LFM)
+            RRF = abs(RFM)
+            RLB = abs(LBM)
+            RRB = abs(RBM)
+
             thrust = Float64MultiArray()
+            rel_arr = [LFM,RFM,LBM,RBM]
+            rel = max(rel_arr)
+            if rel == 0:
+                rel = 1
 
+            LFM = LFM/rel
+            RFM = RFM/rel
+            LBM = LBM/rel
+            RBM = RBM/rel
+            
             thrust.data = [LFM,RFM,LBM,RBM]
-
-
 
             pub.publish(thrust)
             rate.sleep()
-
 
 if __name__ == '__main__':
     try:
