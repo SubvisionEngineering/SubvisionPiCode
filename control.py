@@ -1,4 +1,4 @@
-!/usr/bin/env python
+#!/usr/bin/env python
 
 import rospy
 from sensor_msgs.msg import Joy
@@ -8,6 +8,7 @@ from std_msgs.msg import String
 joystick_data = None
 thrustH = Float64MultiArray()
 thrustV = Float64MultiArray()
+gripper = Float64MultiArray()
 
 #thrust = String
 def joy_callback(data):
@@ -23,11 +24,17 @@ def thrust_value_publisher():
 
     while not rospy.is_shutdown():
         if joystick_data is not None:
+        
+        #horizontal x y and rotation
             x = -joystick_data[0]
             y = joystick_data[1]
-            #u = joystick_data[3]
-            #d = joystick_data[6]
-            r = joystick_data[3] #double check that 3 is right joystick
+            r = joystick_data[3] 
+       #vertical up down
+            u = joystick_data[4]
+     
+       #gripper
+            z = joystick_data[2] 
+            g = joystick_data[5]
 
             # HORIZONTAL
             # Multiplier to have each motor carry out the x and y values in the joystick
@@ -49,28 +56,27 @@ def thrust_value_publisher():
             rel_arr = [RLF,RRF,RLB,RRB]
 
             rel = max(rel_arr)
-	    if LF > 1 or RF > 1 or LB > 1 or RB > 1:
+            if LF > 1 or RF > 1 or LB > 1 or RB > 1:
                 LF = LF/rel
                 RF = RF/rel
                 LB = LB/rel
                 RB = RB/rel
-
-
-            # VERTICAL
-            # o|o
-            UP = abs((b*u)+1)/2
-            DOWN = abs((b*d)+1)/2
-
-            # range from -1 to 1
-            UD = UP - DOWN
-
-
-            thrustH.data = [LF,RF,LB,RB]
-            thrustV.data = [UD]
+            
+            # GRIPPER
+            Twist = abs(z-1)/2
+            Grab = abs(g-1)/2
+		
+            thrustH.data = [LF,RF,LB,RB,u,Twist,Grab]
+            thrustV.data = [u]
+            gripper.data = [Twist,Grab]
 
             pub.publish(thrustH)
             pub.publish(thrustV)
+            pub.publish(gripper)
             rate.sleep()
+
+
+
 
 #def gripper():
 
@@ -86,6 +92,9 @@ if __name__ == '__main__':
         thrust_value_publisher()
     except rospy.ROSInterruptException:
         pass
-
-
-		
+        
+        
+        
+#How the data is being published
+#1 to -1 for Horizontal and vertical
+#0 to 1 for the gripper and its rotating axis
