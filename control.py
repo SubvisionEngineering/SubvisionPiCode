@@ -7,8 +7,6 @@ from std_msgs.msg import String
 
 joystick_data = None
 thrustH = Float64MultiArray()
-thrustV = Float64MultiArray()
-gripper = Float64MultiArray()
 
 #thrust = String
 def joy_callback(data):
@@ -67,12 +65,8 @@ def thrust_value_publisher():
             Grab = abs(g-1)/2
 		
             thrustH.data = [LF,RF,LB,RB,u,Twist,Grab]
-            thrustV.data = [u]
-            gripper.data = [Twist,Grab]
 
             pub.publish(thrustH)
-            pub.publish(thrustV)
-            pub.publish(gripper)
             rate.sleep()
 
 
